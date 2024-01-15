@@ -2,7 +2,7 @@
 
 Dodge the meteors and get the highest score 
 
-Controls:
+Controls:        
 up_arrow: up          
 down_arrow: down            
 right_arrow : right         
