@@ -1,3 +1,4 @@
+import glob
 from os import kill
 from turtle import delay
 import pygame
@@ -49,23 +50,28 @@ def create_meteor():
             num_meteors += 1
             if (current_time%10 == 0):
                 num_meteors += 1
-            print(num_meteors)
+           
             
         last_meteor_time = current_time
         if meteor_delay>=0.7:
             meteor_delay *= 0.98
 
 def move_meteors():
+    removed_meteors = []
     for i in range(len(meteors)):
         meteor_x, meteor_y = meteors[i]
         meteor_y += 5  # Move the meteor downwards
         meteors[i] = (meteor_x, meteor_y)
+        if meteor_y >= HEIGHT:
+            removed_meteors.append((meteor_x, meteor_y))
+    for meteor in removed_meteors:
+        meteors.remove(meteor)
 
 def draw_meteors(meteor):
     for meteor_x, meteor_y in meteors:
         WIN.blit(meteor, (meteor_x, meteor_y))
 
-def draw(player, PLAYERX, PLAYERY, elapsed_time, meteor, MeteorY):
+def draw(player, PLAYERX, PLAYERY, elapsed_time, meteor, MeteorY, meteors_destroyed):
     WIN.blit(BG, (0, 0))
     timer = FONT.render("time: " + str(round(elapsed_time)) + "s", True, "white")
     meteors_destroyed_text = FONT.render("Meteors Destroyed: " + str(meteors_destroyed), True, "white")
@@ -100,13 +106,18 @@ def create_bullet(PLAYERX, PLAYERY):
     bullets.append((bullet_x, bullet_y))
 
 def move_bullets():
+    removed_bullets = []
     for i in range(len(bullets)):
         bullet_x, bullet_y = bullets[i]
         bullet_y -= BULLET_VELOCITY  # Move the bullet upwards
         bullets[i] = (bullet_x, bullet_y)
+        if bullet_y <= 0:
+            removed_bullets.append((bullet_x, bullet_y))
+    for bullet in removed_bullets:
+        bullets.remove(bullet)
+            
 
  
-meteors_destroyed = 0
 def check_bullet_collision(meteors_destroyed):
     for bullet_x, bullet_y in bullets:
         for meteor_x, meteor_y in meteors:
@@ -115,19 +126,19 @@ def check_bullet_collision(meteors_destroyed):
                     bullets.remove((bullet_x, bullet_y))
                     meteors.remove((meteor_x, meteor_y))
                     meteors_destroyed += 1
-                    return
+    return meteors_destroyed                 
 def main():
     run = True
     player = pygame.transform.scale(pygame.image.load("spaceship.PNG"), (PLAYER_WIDTH, PLAYER_HEIGHT))
     meteor = pygame.transform.scale(pygame.image.load("meteor.png"),(METEOR_WIDTH,METEOR_HEIGHT))
     PLAYERX = 500
     PLAYERY = 600
-    MeteorY = 0
-    score = 0
+    MeteorY = 0 
+    meteors_destroyed = 0 # Add a variable to keep track of the number of meteors destroye/d
     while run:
         clock.tick(60)
         elapsed_time = time.time() - start_time
-
+        print(meteors_destroyed)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -147,7 +158,8 @@ def main():
             
         
         move_bullets()
-        check_bullet_collision(meteors_destroyed)
+        meteors_destroyed=check_bullet_collision(meteors_destroyed)
+        
         
 
         create_meteor()
@@ -157,7 +169,7 @@ def main():
             run = False
             game_over(round(elapsed_time))
 
-        draw(player, PLAYERX, PLAYERY, elapsed_time, meteor, MeteorY)  # Move draw function inside the loop to update the screen
+        draw(player, PLAYERX, PLAYERY, elapsed_time, meteor, MeteorY,meteors_destroyed)  # Move draw function inside the loop to update the screen
 
        
 
